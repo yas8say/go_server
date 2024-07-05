@@ -1,0 +1,14 @@
+### List shopping items
+GET http://localhost:8080/shopping-items
+
+
+### Create new shopping items
+POST http://localhost:8080/shopping-items
+Content-Type: application/json
+
+{
+    "name": "Pizza"
+}
+
+### Remove shopping items
+DELETE http://localhost:8080/shopping-items/uuid
