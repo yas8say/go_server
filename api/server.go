@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -19,14 +20,30 @@ type Server struct {
 	shoppingItems []Item
 }
 
+// NewServer initializes the server and registers the routes
 func NewServer() *Server {
 	s := &Server{
 		Router:        mux.NewRouter(),
 		shoppingItems: []Item{},
 	}
+
+	// Register the routes
+	s.routes()
+
+	// Log the registered routes for debugging
+	s.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		log.Println("Registered route:", path)
+		return nil
+	})
+
 	return s
 }
 
+// Define the routes for the server
 func (s *Server) routes() {
 	s.HandleFunc("/shopping-items", s.listShoppingItems()).Methods("GET")
 	s.HandleFunc("/shopping-items", s.createShoppingItem()).Methods("POST")
@@ -37,7 +54,8 @@ func (s *Server) createShoppingItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var i Item
 		if err := json.NewDecoder(r.Body).Decode(&i); err != nil {
-
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		i.ID = uuid.New()
